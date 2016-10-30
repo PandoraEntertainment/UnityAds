@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--GearVR plugin additions-->
+<root xmlns:android="http://schemas.android.com/apk/res/android">
+	<!-- init section is always evaluated once per architecture -->
+	<trace enable="true"/>
+	<init>
+		<log text="UnityAds init"/>		
+	</init>
+
+  <androidManifestUpdates>
+    <addElements tag="application">
+      <activity
+         android:name="com.unity3d.ads.adunit.AdUnitActivity"
+         android:configChanges="fontScale|keyboard|keyboardHidden|locale|mnc|mcc|navigation|orientation|screenLayout|screenSize|smallestScreenSize|uiMode|touchscreen"
+         android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+         android:hardwareAccelerated="true" />
+
+      <activity
+          android:name="com.unity3d.ads.adunit.AdUnitSoftwareActivity"
+          android:configChanges="fontScale|keyboard|keyboardHidden|locale|mnc|mcc|navigation|orientation|screenLayout|screenSize|smallestScreenSize|uiMode|touchscreen"
+          android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+          android:hardwareAccelerated="false" />  
+    </addElements>
+
+    <!-- Read App ID from plugin project settings and add to the manifest -->
+    <setStringFromProperty result="AppId" ini="Engine" section="/Script/UnityAds.UnityAdsSettings" property="AppId" default=""/>
+    <setElement result="AppIdMetadata" value="meta-data"/>
+    <addAttribute tag="$AppIdMetadata" name="android:name" value="com.epicgames.ue4.UnityAds.AppId"/>
+    <addAttribute tag="$AppIdMetadata" name="android:value" value="$S(AppId)"/>
+    <addElement tag="application" name="AppIdMetadata"/>
+    
+     <!-- Read App ID from plugin project settings and add to the manifest -->
+    <setStringFromProperty result="RewardedVideoId" ini="Engine" section="/Script/UnityAds.UnityAdsSettings" property="RewardedVideoId" default=""/>
+    <setElement result="RewardedVideoIdMetadata" value="meta-data"/>
+    <addAttribute tag="$RewardedVideoIdMetadata" name="android:name" value="com.epicgames.ue4.UnityAds.RewardedVideoId"/>
+    <addAttribute tag="$RewardedVideoIdMetadata" name="android:value" value="$S(RewardedVideoId)"/>
+    <addElement tag="application" name="RewardedVideoIdMetadata"/>
+
+	
+	<!-- Read App ID from plugin project settings and add to the manifest 
+    <setStringFromProperty result="GameId" ini="Engine" section="/Script/UnityAds.UnityAdsSettings" property="GameId" default=""/>
+    <setElement result="GameIdMetadata" value="meta-data"/>
+    <addAttribute tag="$GameIdMetadata" name="android:name" value="com.epicgames.ue4.UnityAds.GameId"/>
+    <addAttribute tag="$GameIdMetadata" name="android:value" value="$S(GameId)"/>
+    <addElement tag="application" name="GameIdMetadata"/>-->
+
+  </androidManifestUpdates>
+
+	<!-- optional additions to proguard -->
+	<proguardAdditions>
+		<insert>
+<!-- -keep class com.oculus.** {
+   *;
+}
+-keep class android.app.** {
+   *;
+} -->
+
+
+
+      # Keep filenames and line numbers for stack traces
+      -keepattributes SourceFile,LineNumberTable
+
+      # Keep JavascriptInterface for WebView bridge
+      -keepattributes JavascriptInterface
+
+      # Sometimes keepattributes is not enough to keep annotations
+      -keep class android.webkit.JavascriptInterface {
+      *;
+      }
+
+      # Keep all classes in Unity Ads package
+      -keep class com.unity3d.ads.** {
+      *;
+      }
+
+    </insert>
+	</proguardAdditions>
+	
+	<!-- optional files or directories to copy to Intermediate/Android/APK -->
+ 	<resourceCopies>		
+		<copyFile src="$S(PluginDir)/../../lib/Android/unity-ads-2.0.5.jar" dst="$S(BuildDir)/libs/unity-ads-2.0.5.jar" />
+<!--		<isArch arch="armeabi-v7a">
+			<copyFile src="$S(EngineDir)/Source/ThirdParty/Oculus/LibOVRMobile/LibOVRMobile_062/VrApi/Libs/Android/armeabi-v7a/libvrapi.so"
+						dst="$S(BuildDir)/libs/armeabi-v7a/libvrapi.so" />
+		</isArch>
+		<copyFile src="$S(EngineDir)/Source/ThirdParty/Oculus/LibOVRMobile/LibOVRMobile_062/VrApi/Libs/Android/VrApi.jar"
+					dst="$S(BuildDir)/libs/VrApi.jar" />
+		<copyFile src="$S(EngineDir)/Source/ThirdParty/Oculus/LibOVRMobile/LibOVRMobile_062/1stParty/VrPlatform/libs/vrplatlib.jar"
+					dst="$S(BuildDir)/libs/vrplatlib.jar" />
+		<if condition="bRemoveOSIG">
+			<true>
+				<deleteFiles filespec="assets/oculussig_*" />
+			</true>
+		</if>-->
+	</resourceCopies>
+
+	<!-- optional additions to the GameActivity imports in GameActivity.java -->
+	<gameActivityImportAdditions>
+		<insert>
+
+      import com.unity3d.ads.IUnityAdsListener;
+      import com.unity3d.ads.UnityAds;
+      import com.unity3d.ads.log.DeviceLog;
+      import com.unity3d.ads.metadata.MediationMetaData;
+      import com.unity3d.ads.metadata.MetaData;
+      import com.unity3d.ads.metadata.PlayerMetaData;
+      import com.unity3d.ads.misc.Utilities;
+      import com.unity3d.ads.properties.SdkProperties;
+	  
+	  import android.webkit.*;
+      //import android.webkit.WebViewClient;
+
+    </insert>
+	</gameActivityImportAdditions>
+	
+
+	<!-- optional additions to the GameActivity class in GameActivity.java -->
+	<gameActivityClassAdditions>
+		<insert>
+      final private boolean testmode = true;
+      private String gameId = ""; //Replace with your GameId from UnityAds Dashboard
+
+      private String rewardedVideoId = ""; //Replace with your ZoneId from UnityAds Dashboard
+
+      private class UnityAdsListener implements IUnityAdsListener {
+
+      //
+      @Override
+      public void onUnityAdsReady(String placementId) {
+      //Log.debug("UnityAds.onUnityAdsReady(\"" + placementId + "\", \"" + "ready" + "\")");
+      if (placementId.equals(rewardedVideoId)) {
+      nativeUnityAdsonUnityAdsReady();
+      //Log.debug("UnityAds.onUnityAdsReady(\"" + placementId + "\", \"" + "ready2" + "\")");
+
+      }
+
+      }
+
+      @Override
+      public void onUnityAdsStart(String placementId) {
+      //Log.debug("UnityAds.onUnityAdsStart(\"" + placementId + "\", \"" + "Start" + "\")");
+
+      }
+
+      @Override
+      public void onUnityAdsFinish(String placementId, UnityAds.FinishState result) {
+
+      if(result == UnityAds.FinishState.COMPLETED)//ERROR
+      {
+      nativeUnityAdsonUnityAdsFinish();
+      //Log.debug("UnityAds.onUnityAdsFinish(\"" + placementId + "\", \"" + result + "\")");
+
+      }
+
+      }
+
+      @Override
+      public void onUnityAdsError(UnityAds.UnityAdsError error, String message) {
+      //Log.debug("UnityAds.Error(\"" + error + "\", \"" + message + "\")");
+
+
+      }
+
+      };
+
+      final UnityAdsListener unityAdsListener = new UnityAdsListener();
+
+      // Called after a rewarded video has been viewed completely and user is eligible for reward.
+      //public native void nativeUnityAdsDidCompleteRewardedVideo();
+      public native void nativeUnityAdsonUnityAdsReady();
+
+      public native void nativeUnityAdsonUnityAdsFinish();
+
+      // Called after a rewarded video has been closed.
+      //public native void nativeUnityAdsDidCloseRewardedVideo();
+
+      // Called after a rewarded video has been chached.
+      //public native void nativeUnityAdsDidCacheRewardedVideo();
+
+
+
+      public void AndroidThunkJava_UnityAds_ShowRewardedVideo()
+      {
+
+      if (UnityAds.isReady(rewardedVideoId))//"rewardedVideo"
+      {
+      //Log.debug( "UnityAds.isReady()" );
+      UnityAds.show(this, rewardedVideoId); //rewardedVideo
+      //Log.debug( "AndroidThunkJava_UnityAds_ShowRewardedVideo()" );
+      }
+      }
+
+      public boolean AndroidThunkJava_UnityAds_HasRewardedVideo()
+      {
+      return UnityAds.isReady("rewardedVideoId");//"rewardedVideo"
+
+      }
+
+
+    </insert>
+	</gameActivityClassAdditions>
+	
+	<!-- optional additions to GameActivity onCreate metadata reading in GameActivity.java -->
+	<gameActivityReadMetadataAdditions>
+	<insert>
+    //String gameId = bundle.getString("com.epicgames.ue4.UnityAds.AppId");
+    //String rewardedVideoId = bundle.getString("com.epicgames.ue4.UnityAds.RewardedVideoId");
+
+    //Log.debug("UnityAds.init(\"" + gameId + "\"));
+
+    //Configure UnityAds in your launching Activity's onCreate() method
+    //so that ads can be available as soon as possible.
+    //UnityAds.setDebugMode(true);
+    UnityAds.setListener(unityAdsListener);
+    UnityAds.initialize(this, gameId, unityAdsListener);	
+    //Log.debug("UnityAds.initialize(\"" + gameId + "\", \"" + "unityAdsListener" + "\")");
+
+  </insert>
+	</gameActivityReadMetadataAdditions>
+	
+	<!-- optional additions to GameActivity onCreate in GameActivity.java -->
+	<gameActivityOnCreateAdditions>
+	<insert>
+   
+  </insert>
+  </gameActivityOnCreateAdditions>
+
+	<!-- optional additions to GameActivity onDestroy in GameActivity.java -->
+	<gameActivityOnDestroyAdditions>
+		<insert>
+		
+		</insert>
+	</gameActivityOnDestroyAdditions>
+	
+	
+	<!-- optional additions to GameActivity onStart in GameActivity.java -->
+	<gameActivityOnStartAdditions>
+		<insert>
+		
+		</insert>
+	</gameActivityOnStartAdditions>
+
+	<!-- optional additions to GameActivity onStop in GameActivity.java -->
+	<gameActivityOnStopAdditions>
+		<insert>
+		
+		</insert>
+	</gameActivityOnStopAdditions>
+	
+
+	<!-- optional additions to GameActivity onPause in GameActivity.java	-->
+	<gameActivityOnPauseAdditions>
+		<insert>
+		
+		</insert>
+	</gameActivityOnPauseAdditions>
+
+
+	<!-- optional additions to GameActivity onResume in GameActivity.java	-->
+	<gameActivityOnResumeAdditions>
+		<insert>
+		//UnityAds.changeActivity(this);
+		</insert>
+	</gameActivityOnResumeAdditions>
+
+
+	<!-- optional additions to GameActivity onActivityResult in GameActivity.java -->
+	<gameActivityOnActivityResultAdditions>
+	</gameActivityOnActivityResultAdditions>
+	
+
+	<!-- optional libraries to load in GameActivity.java before libUE4.so -->
+	<soLoadLibrary>
+		<!-- need this if plugin enabled and supported architecture, even if not packaged for GearVR -->
+	<!-- 	<if condition="bSupported">
+			<true>
+				<loadLibrary name="vrapi" failmsg="GearVR library not loaded and required!" />
+			</true>
+		</if> -->
+	</soLoadLibrary>
+</root>
