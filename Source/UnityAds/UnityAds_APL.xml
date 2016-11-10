@@ -193,7 +193,7 @@
 
       public boolean AndroidThunkJava_UnityAds_HasRewardedVideo()
       {
-      return UnityAds.isReady("rewardedVideoId");//"rewardedVideo"
+      return UnityAds.isReady(rewardedVideoId);//"rewardedVideo"
 
       }
 
