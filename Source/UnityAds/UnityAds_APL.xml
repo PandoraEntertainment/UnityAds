@@ -119,9 +119,11 @@
 	<gameActivityClassAdditions>
 		<insert>
       final private boolean testmode = true;
-      private String gameId = ""; //Replace with your GameId from UnityAds Dashboard
+      //private String gameId = ""; //Replace with your GameId from UnityAds Dashboard
 
-      private String rewardedVideoId = ""; //Replace with your ZoneId from UnityAds Dashboard
+      //private String rewardedVideoId = ""; //Replace with your ZoneId from UnityAds Dashboard
+	  
+	  public String rewardedVideoId_g;
 
       private class UnityAdsListener implements IUnityAdsListener {
 
@@ -129,7 +131,7 @@
       @Override
       public void onUnityAdsReady(String placementId) {
       //Log.debug("UnityAds.onUnityAdsReady(\"" + placementId + "\", \"" + "ready" + "\")");
-      if (placementId.equals(rewardedVideoId)) {
+      if (placementId.equals(rewardedVideoId_g)) {
       nativeUnityAdsonUnityAdsReady();
       //Log.debug("UnityAds.onUnityAdsReady(\"" + placementId + "\", \"" + "ready2" + "\")");
 
@@ -182,18 +184,14 @@
 
       public void AndroidThunkJava_UnityAds_ShowRewardedVideo()
       {
-
-      if (UnityAds.isReady(rewardedVideoId))//"rewardedVideo"
-      {
-      //Log.debug( "UnityAds.isReady()" );
-      UnityAds.show(this, rewardedVideoId); //rewardedVideo
-      //Log.debug( "AndroidThunkJava_UnityAds_ShowRewardedVideo()" );
-      }
+	  UnityAds.show(this, rewardedVideoId_g); //rewardedVideo
+      //Log.debug( "AndroidThunkJava_UnityAds_ShowRewardedVideo()" + rewardedVideoId_g );
       }
 
       public boolean AndroidThunkJava_UnityAds_HasRewardedVideo()
       {
-      return UnityAds.isReady(rewardedVideoId);//"rewardedVideo"
+      Log.debug( "UnityAds.isReady" +  rewardedVideoId_g);
+      return UnityAds.isReady(rewardedVideoId_g);//"rewardedVideo"
 
       }
 
@@ -204,8 +202,14 @@
 	<!-- optional additions to GameActivity onCreate metadata reading in GameActivity.java -->
 	<gameActivityReadMetadataAdditions>
 	<insert>
-    //String gameId = bundle.getString("com.epicgames.ue4.UnityAds.AppId");
-    //String rewardedVideoId = bundle.getString("com.epicgames.ue4.UnityAds.RewardedVideoId");
+    String rewardedVideoId = bundle.getString("com.epicgames.ue4.UnityAds.RewardedVideoId");
+
+    int gameId_i = bundle.getInt("com.epicgames.ue4.UnityAds.AppId");
+
+    String gameId = Integer.toString(gameId_i);
+
+    this.rewardedVideoId_g = rewardedVideoId;
+    //Log.debug(rewardedVideoId + "/" + rewardedVideoId_g);
 
     //Log.debug("UnityAds.init(\"" + gameId + "\"));
 
