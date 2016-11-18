@@ -14,7 +14,7 @@ public:
 	// SDK Ids
 
 	UPROPERTY(Config, EditAnywhere, Category = App, meta = (DisplayName = "App Id"))
-	FString AppId;
+	int32 AppId;
 
 	UPROPERTY(Config, EditAnywhere, Category = App, meta = (DisplayName = "RewardedVdeo Id"))
 	FString RewardedVdeoId;
